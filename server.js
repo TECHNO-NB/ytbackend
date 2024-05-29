@@ -31,7 +31,7 @@ if (cluster.isPrimary) {
   // Main App Middlewares
   app.use(
     cors({
-      origin: ["*","https://check-youtube.vercel.app/", "http://localhost:5173","https://check-youtube.vercel.app", "http://192.168.0.120:4000",process.env.FRONTEND_URL],
+      origin: ["https://check-youtube.vercel.app","*","https://check-youtube.vercel.app/", "http://localhost:5173","https://check-youtube.vercel.app", "http://192.168.0.120:4000",process.env.FRONTEND_URL],
       methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
       credentials: true,
     })
