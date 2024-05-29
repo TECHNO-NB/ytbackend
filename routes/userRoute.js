@@ -18,7 +18,7 @@ router.route("/register").post(
   ]),
   controllers.registerControler
 );
-router.route("/login").post(controllers.loginControler);
+router.route("/login").post(controllers.loginController);
 router.route("/logout").post(jwtVerify, controllers.userLogOut);
 router.route("/profile").get(jwtVerify, controllers.userProfile);
 router

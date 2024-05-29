@@ -72,36 +72,42 @@ exports.registerControler = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, createdUser, "User Registered Successfully"));
 });
 
-exports.loginControler = asyncHandler(async (req, res) => {
+exports.loginController = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-  res.send(email,password)
+
   if (!email || !password) {
-    throw new ApiError(400, "Email And Password Is Required");
+    throw new ApiError(400, "Email and Password are required");
   }
+
   const user = await User.findOne({ email: email });
   if (!user) {
-    throw new ApiError(400, "Please Add Valid Email And Password");
+    throw new ApiError(400, "Please provide a valid email and password");
   }
+
   if (user.password) {
-    const isCorrectPss = await user.isPasswordCorrect(password);
-    if (isCorrectPss) {
-      const { refreshToken, accessToken } = await createAccessAndRefreshToken(
-        user._id
-      );
-      const loggedInUser = await User.findById(user._id).select(
-        "-password -refreshToken"
-      );
+    const isCorrectPassword = await user.isPasswordCorrect(password);
+    if (isCorrectPassword) {
+      const { refreshToken, accessToken } = await createAccessAndRefreshToken(user._id);
+      const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
+
       const options = {
-        host:"https://check-youtube.vercel.app",
-        path: "/",
         httpOnly: true,
         secure: true,
         sameSite: "none",
       };
+
       res
         .status(200)
-        .cookie("refreshToken", refreshToken, options)
-        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", refreshToken, {
+          ...options,
+          domain: "check-youtube.vercel.app",
+          path: "/",
+        })
+        .cookie("accessToken", accessToken, {
+          ...options,
+          domain: "check-youtube.vercel.app",
+          path: "/",
+        })
         .json(
           new ApiResponse(
             200,
@@ -110,14 +116,15 @@ exports.loginControler = asyncHandler(async (req, res) => {
               refreshToken,
               accessToken,
             },
-            "User LogIn SuccessFully"
+            "User logged in successfully"
           )
         );
     } else {
-      throw new ApiError(400, "please enter correct password");
+      throw new ApiError(400, "Please enter the correct password");
     }
   }
 });
+
 
 exports.userLogOut = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
