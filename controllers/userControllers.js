@@ -92,7 +92,7 @@ exports.loginControler = asyncHandler(async (req, res) => {
         "-password -refreshToken"
       );
       const options = {
-        host:"'https://check-youtube.vercel.app",
+        host:"https://check-youtube.vercel.app",
         path: "/",
         httpOnly: true,
         secure: true,
