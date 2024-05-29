@@ -10,12 +10,11 @@ const path = require("path");
 const os = require("os");
 const cluster = require("cluster");
 
-// setup Cluster
-// Number Of CPUS
-const numCPUS = os.cpus().length;
+// Setup Cluster
+const numCPUs = os.cpus().length;
 
 if (cluster.isPrimary) {
-  for (let i = 0; i < numCPUS; i++) {
+  for (let i = 0; i < numCPUs; i++) {
     cluster.fork();
   }
   cluster.on("exit", (worker, code, signal) => {
@@ -25,39 +24,53 @@ if (cluster.isPrimary) {
 } else {
   const app = express();
 
-  // dot env file
+  // Load environment variables
   env.config();
 
-  // Main App Middlewares
-  app.use(
-    cors({
-      origin: ["https://check-youtube.vercel.app","*","https://check-youtube.vercel.app/", "http://localhost:5173","https://check-youtube.vercel.app", "http://192.168.0.120:4000",process.env.FRONTEND_URL],
-      methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
-      credentials: true,
-    })
-  );
+  // CORS configuration
+  const allowedOrigins = [
+    "https://check-youtube.vercel.app",
+    "http://localhost:5173",
+    "http://192.168.0.120:4000",
+    process.env.FRONTEND_URL
+  ];
 
+  app.use(cors({
+    origin: function (origin, callback) {
+      // Allow requests with no origin, like mobile apps or curl requests
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg = 'The CORS policy for this site does not allow access from the specified origin.';
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
+    methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
+    credentials: true,
+  }));
+
+  // Middleware
   app.use(express.static("public"));
   app.use(express.json({ limit: "100mb" }));
   app.use(bodyParser.urlencoded({ limit: "100mb", extended: true }));
   app.use(cookieParser());
 
-  // databaseConnection
+  // Database Connection
   require("./database/dbs");
 
-  app.get("/",(req,res)=>{
-res.send("server working fine")
-  })
-  // User Api Route
+  // Root Route
+  app.get("/", (req, res) => {
+    res.send("Server working fine");
+  });
+
+  // API Routes
   app.use("/api/v1/users", userRoutes);
-
-  // Subscriptions Api Route
   app.use("/api/v1", subscriptionsRoute);
-
-  // videoUplode APi route
   app.use("/api/v1", videoUploadRoute);
 
-  app.listen(process.env.PORT || 8000, () => {
-    console.log(`⚙️ Server is running at port : ${process.env.PORT}`);
+  // Start server
+  const PORT = process.env.PORT || 8000;
+  app.listen(PORT, () => {
+    console.log(`⚙️ Server is running at port: ${PORT}`);
   });
 }
