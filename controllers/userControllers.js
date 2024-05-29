@@ -74,6 +74,7 @@ exports.registerControler = asyncHandler(async (req, res) => {
 
 exports.loginControler = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
+  res.send(email,password)
   if (!email || !password) {
     throw new ApiError(400, "Email And Password Is Required");
   }
