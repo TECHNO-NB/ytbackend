@@ -44,11 +44,7 @@ exports.uploadVideos = asyncHandler(async (req, res) => {
 });
 
 exports.getAllVideos = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 10, sortBy = -1 } = req.query;
-  const skipvideos = (page - 1) * limit;
   const allVideos = await Video.find({ isPublished: true })
-    .limit(limit)
-    .skip(skipvideos)
     .sort({ createdAt: sortBy })
     .populate("owner", "fullName avatar");
 
@@ -60,8 +56,6 @@ exports.getAllVideos = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, allVideos, "Successfully fetch all videos"));
 });
-
-
 
 exports.getVideoById = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
@@ -76,12 +70,12 @@ exports.getVideoById = asyncHandler(async (req, res) => {
     );
 });
 
-exports.userVideos=asyncHandler(async(req,res)=>{
- const getUserVideos=await Video.find({
-  owner:req.user._id
- })
- res.json(getUserVideos)
-})
+exports.userVideos = asyncHandler(async (req, res) => {
+  const getUserVideos = await Video.find({
+    owner: req.user._id,
+  });
+  res.json(getUserVideos);
+});
 
 exports.videoViews = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
