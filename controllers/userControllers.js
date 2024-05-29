@@ -92,10 +92,11 @@ exports.loginControler = asyncHandler(async (req, res) => {
         "-password -refreshToken"
       );
       const options = {
+        host:"'https://check-youtube.vercel.app",
         path: "/",
         httpOnly: true,
         secure: true,
-        sameSite: "strict",
+        sameSite: "none",
       };
       res
         .status(200)
@@ -130,7 +131,7 @@ exports.userLogOut = asyncHandler(async (req, res) => {
   const options = {
     httpOnly: true,
     secure: true,
-    sameSite: "strict",
+    sameSite: "none",
   };
 
   res
