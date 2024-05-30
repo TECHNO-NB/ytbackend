@@ -44,9 +44,8 @@ exports.uploadVideos = asyncHandler(async (req, res) => {
 });
 
 exports.getAllVideos = asyncHandler(async (req, res) => {
-  const sortBy = req.query.sortBy || 'createdAt';
-  const allVideos = await Video.find({ isPublished: true })
-  .sort({ [sortBy]: 1 })
+  const sortBy = req.query.sortBy || 'createdAt';  const allVideos = await Video.find({ isPublished: true })
+  .sort({ createdAt: -1 })
   .populate("owner", "fullName avatar");
 
 if (!allVideos) {
