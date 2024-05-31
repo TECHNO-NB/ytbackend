@@ -44,9 +44,11 @@ exports.uploadVideos = asyncHandler(async (req, res) => {
 });
 
 exports.getAllVideos = asyncHandler(async (req, res) => {
-  const sortBy = req.query.sortBy || 'createdAt';  const allVideos = await Video.find({ isPublished: true })
-  .sort({ createdAt: 1 })
-  .populate("owner", "fullName avatar");
+   const allVideos = await Video.find({ isPublished: true })
+  .sort({ createdAt: -1 })
+  .limit(10)
+  .populate("owner", "fullName avatar")
+  .select("-videoFile")
 
 if (!allVideos) {
     throw new ApiError(400, "Somethings Went Wrong");
