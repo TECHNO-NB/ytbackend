@@ -62,7 +62,9 @@ if (!allVideos) {
 
 exports.getVideoById = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
-  const getOneVideo = await Video.findById(videoId);
+  console.log(req.params)
+  const getOneVideo = await Video.findById(videoId)
+  .populate("owner", "fullName avatar");
   if (!getOneVideo) {
     throw new ApiError(400, "Somethings Went Wrong");
   }
