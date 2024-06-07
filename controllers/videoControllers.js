@@ -44,13 +44,13 @@ exports.uploadVideos = asyncHandler(async (req, res) => {
 });
 
 exports.getAllVideos = asyncHandler(async (req, res) => {
-   const allVideos = await Video.find({ isPublished: true })
-  .sort({ createdAt: -1 })
-  .limit(10)
-  .populate("owner", "fullName avatar")
-  .select("-videoFile")
+  const allVideos = await Video.find({ isPublished: true })
+    .sort({ createdAt: -1 })
+    .limit(10)
+    .populate("owner", "fullName avatar username")
+    .select("-videoFile");
 
-if (!allVideos) {
+  if (!allVideos) {
     throw new ApiError(400, "Somethings Went Wrong");
   }
   res
@@ -58,14 +58,13 @@ if (!allVideos) {
     .json(new ApiResponse(200, allVideos, "Successfully fetch all videos"));
 });
 
-
-
 exports.getVideoById = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
+  const getOneVideo = await Video.findById({ _id: videoId }).populate(
+    "owner",
+    "fullName avatar username"
+  );
 
-  const getOneVideo = await Video.findById({_id:videoId})
-  .populate("owner", "fullName avatar username");
-  
   if (!getOneVideo) {
     throw new ApiError(400, "Somethings Went Wrong");
   }
