@@ -7,10 +7,12 @@ exports.subscriptionsControler = asyncHandler(async (req, res) => {
   const { channel } = req.body;
   const { _id } = req.user;
 
-  console.log(channel,_id)
+
   if (!channel) {
     throw new ApiError(400, "SomeThing Went Wrong");
   }
+
+
   const subscribed = await Subscription.create({
     subscriber:_id,
     channel,

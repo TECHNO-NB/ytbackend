@@ -5,6 +5,8 @@ const subscriptionsSchema = new mongoose.Schema(
     subscriber: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+      unique: [true,"Already Subscribed"]
+      
     },
     channel: {
       type: mongoose.Schema.Types.ObjectId,
