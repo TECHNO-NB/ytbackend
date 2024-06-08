@@ -5,12 +5,13 @@ const ApiResponse=require("../utils/apiResonse");
 
 
 exports.subscriptionsControler=asyncHandler(async(req,res)=>{
-   const {subscriber,channel}=req.body;
-   if(!subscriber || ! channel){
+   const {channel}=req.body;
+   const {_id}=req.user;
+   if(!channel){
       throw new ApiError(400,"SomeThing Went Wrong");
    }
   const subscribed=await Subscription.create({
-      subscriber,
+      _id,
       channel
    })
    if(!subscribed){
