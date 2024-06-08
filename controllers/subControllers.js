@@ -8,11 +8,19 @@ exports.subscriptionsControler = asyncHandler(async (req, res) => {
   const { _id } = req.user;
 
 
+
   if (!channel) {
     throw new ApiError(400, "SomeThing Went Wrong");
   }
 
-
+const alreadySubscribed=await Subscription.find({
+  subscriber:{
+    $in:_id
+  }
+})
+if(alreadySubscribed){
+  throw new ApiError(400, "You are already subscribed to this channel");
+}
   const subscribed = await Subscription.create({
     subscriber:_id,
     channel,
