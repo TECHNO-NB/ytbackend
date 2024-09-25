@@ -87,8 +87,12 @@ exports.loginController = asyncHandler(async (req, res) => {
   if (user.password) {
     const isCorrectPassword = await user.isPasswordCorrect(password);
     if (isCorrectPassword) {
-      const { refreshToken, accessToken } = await createAccessAndRefreshToken(user._id);
-      const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
+      const { refreshToken, accessToken } = await createAccessAndRefreshToken(
+        user._id
+      );
+      const loggedInUser = await User.findById(user._id).select(
+        "-password -refreshToken"
+      );
 
       const options = {
         httpOnly: true,
@@ -98,16 +102,8 @@ exports.loginController = asyncHandler(async (req, res) => {
 
       res
         .status(200)
-        .cookie("refreshToken", refreshToken, {
-          ...options,
-          domain: "check-youtube.vercel.app",
-          path: "/",
-        })
-        .cookie("accessToken", accessToken, {
-          ...options,
-          domain: "check-youtube.vercel.app",
-          path: "/",
-        })
+        .cookie("refreshToken", refreshToken, options)
+        .cookie("accessToken", accessToken, options)
         .json(
           new ApiResponse(
             200,
@@ -124,7 +120,6 @@ exports.loginController = asyncHandler(async (req, res) => {
     }
   }
 });
-
 
 exports.userLogOut = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
@@ -153,12 +148,15 @@ exports.userProfile = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, { userData }, "User Profile"));
 });
 
+// re-verfy User or generate new token
+
 exports.generateAccessRefreshToken = asyncHandler(async (req, res) => {
-  const { accessTOKEN } = req.body;
-  if (!accessTOKEN) {
+  const token = req.cookies?.refreshToken;
+
+  if (!token) {
     new ApiError(400, "No Access Token");
   }
-  const jwtverfiytoken = await jwt.verify(accessTOKEN, process.env.JWT_SECRET);
+  const jwtverfiytoken = await jwt.verify(token, process.env.JWT_SECRET);
   if (!jwtverfiytoken) {
     new ApiError(400, "Invalid Access Token");
   }
@@ -175,6 +173,7 @@ exports.generateAccessRefreshToken = asyncHandler(async (req, res) => {
   const options = {
     httpOnly: true,
     secure: true,
+    sameSite: "none",
   };
   res
     .status(200)

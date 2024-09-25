@@ -18,8 +18,8 @@ const jwtVerify = async (req, res, next) => {
     next();
   } catch (error) {
     console.error("JWT Verification Error:", error);
-    res.status(400).json({"message":"Unauthorized request"})
+    res.status(400).json({ message: "Unauthorized request" });
   }
 };
 
-module.exports=jwtVerify;
+module.exports = jwtVerify;
