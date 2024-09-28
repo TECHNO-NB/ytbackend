@@ -13,6 +13,7 @@ exports.uploadVideos = asyncHandler(async (req, res) => {
   }
 
   const videoFilePath = req.files?.video[0]?.path;
+
   const thumbnailFilePath = req.files?.thumbnail[0]?.path;
   if (!videoFilePath || !thumbnailFilePath) {
     throw new ApiError(400, "File Not Founds");
@@ -27,6 +28,9 @@ exports.uploadVideos = asyncHandler(async (req, res) => {
   if (!videoUrl.url || !thumbnailUrl.url) {
     throw new ApiError(400, "Error In Cloudnary");
   }
+
+  console.log(videoUrl.url)
+  console.log(thumbnailUrl.url)
   const uploadVideo = await videoModel.create({
     videoFile: videoUrl?.url,
     thumbnail: thumbnailUrl?.url,
