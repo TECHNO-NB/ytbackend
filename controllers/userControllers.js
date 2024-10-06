@@ -334,6 +334,8 @@ exports.getUserChannelProfile = asyncHandler(async (req, res) => {
     },
   ]);
 
+  console.log(channel[0])
+
   if (!channel?.length) {
     throw new ApiError(404, "channel doest not exists");
   }
@@ -343,4 +345,27 @@ exports.getUserChannelProfile = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(200, channel[0], "User Channel fetched successfully")
     );
+});
+
+// forget password
+
+exports.forgetPassword = asyncHandler(async (req, res) => {
+  const { email, newPassword } = req.body;
+
+  if (!email || !newPassword) {
+    throw new ApiError(400, "Please fill all required fields");
+  }
+
+  const user = await User.findOne({ email: email });
+  if (!user) {
+    throw new ApiError(400, "User not found");
+  }
+
+  user.password = newPassword;
+
+  await user.save({ validateBeforeSave: false });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user.username, "Password changed successfully"));
 });

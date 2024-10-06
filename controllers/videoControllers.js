@@ -4,6 +4,7 @@ const ApiError = require("../utils/apiError");
 const ApiResponse = require("../utils/apiResonse");
 const uploadOnCloudinary = require("../utils/cloudnary");
 const videoModel = require("../models/videoModel");
+const mongoose = require("mongoose");
 
 exports.uploadVideos = asyncHandler(async (req, res) => {
   const { title, description, owner } = req.body;
@@ -29,8 +30,8 @@ exports.uploadVideos = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Error In Cloudnary");
   }
 
-  console.log(videoUrl.url)
-  console.log(thumbnailUrl.url)
+  console.log(videoUrl.url);
+  console.log(thumbnailUrl.url);
   const uploadVideo = await videoModel.create({
     videoFile: videoUrl?.url,
     thumbnail: thumbnailUrl?.url,
@@ -64,18 +65,104 @@ exports.getAllVideos = asyncHandler(async (req, res) => {
 
 exports.getVideoById = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
-  const getOneVideo = await Video.findById({ _id: videoId }).populate(
-    "owner",
-    "fullName avatar username"
-  );
 
-  if (!getOneVideo) {
-    throw new ApiError(400, "Somethings Went Wrong");
+  // try {
+  //   // Convert videoId to ObjectId
+  //   const id = '66f7fc7d71aa00b194bf003e' ;
+
+  //   const getVideoByID = await Video.aggregate([
+  //     {
+  //       $match: { _id: new mongoose.Types.ObjectId(videoId)}
+  //     },
+  //   ])
+
+  //   // Check if video was found
+  //   if (getVideoByID.length === 0) {
+  //     return res.status(404).json({ message: 'Video not found' });
+  //   }
+
+  //   // Return the found video
+  //   return res.status(200).json(getVideoByID[0]);
+  // } catch (error) {
+  //   console.error(error);
+  //   return res.status(500).json({ message: 'Server error' });
+  // }
+
+  const getVideoByID = await Video.aggregate([
+    {
+      $match: { _id: new mongoose.Types.ObjectId(videoId) },
+    },
+    {
+      $lookup: {
+        from: "likes",
+        localField: "_id",
+        foreignField: "video",
+        as: "likes",
+      },
+    },
+    {
+      $lookup: {
+        from: "comments",
+        localField: "_id",
+        foreignField: "video",
+        as: "comments",
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "owner",
+        foreignField: "_id",
+        as: "owners",
+      },
+    },
+    {
+      $addFields: {
+        likescount: {
+          $size: "$likes",
+        },
+        commentscount: {
+          $size: "$comments",
+        },
+        comments: "$comments",
+        isLike: {
+          $cond: {
+            if: {
+              $in: [req.user?._id, "$likes.user"],
+            },
+            then: true,
+            else: false,
+          },
+        },
+      },
+    },
+
+    {
+      $project: {
+        likescount: 1,
+        commentscount: 1,
+        comments: 1,
+        owners: 1,
+        videoFile: 1,
+        thumbnail: 1,
+        duration: 1,
+        views: 1,
+        title: 1,
+        description: 1,
+        isLike: 1,
+      },
+    },
+  ]);
+
+  console.log(getVideoByID[0]);
+  if (!getVideoByID || getVideoByID.length === 0) {
+    throw new ApiError(400, "Something Went Wrong");
   }
+
   res
     .status(200)
     .json(
-      new ApiResponse(200, getOneVideo, "Successfully fetch all One Video")
+      new ApiResponse(200, getVideoByID[0], "Successfully fetched One Video")
     );
 });
 

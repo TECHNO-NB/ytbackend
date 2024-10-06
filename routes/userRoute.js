@@ -40,5 +40,6 @@ router
   .route("/userchannel/:username")
   .post(jwtVerify, controllers.getUserChannelProfile);
 
+router.route("/forgetpassword").post(controllers.forgetPassword);
 
 module.exports = router;
