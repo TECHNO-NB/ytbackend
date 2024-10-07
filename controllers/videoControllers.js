@@ -66,28 +66,6 @@ exports.getAllVideos = asyncHandler(async (req, res) => {
 exports.getVideoById = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
 
-  // try {
-  //   // Convert videoId to ObjectId
-  //   const id = '66f7fc7d71aa00b194bf003e' ;
-
-  //   const getVideoByID = await Video.aggregate([
-  //     {
-  //       $match: { _id: new mongoose.Types.ObjectId(videoId)}
-  //     },
-  //   ])
-
-  //   // Check if video was found
-  //   if (getVideoByID.length === 0) {
-  //     return res.status(404).json({ message: 'Video not found' });
-  //   }
-
-  //   // Return the found video
-  //   return res.status(200).json(getVideoByID[0]);
-  // } catch (error) {
-  //   console.error(error);
-  //   return res.status(500).json({ message: 'Server error' });
-  // }
-
   const getVideoByID = await Video.aggregate([
     {
       $match: { _id: new mongoose.Types.ObjectId(videoId) },
@@ -98,6 +76,14 @@ exports.getVideoById = asyncHandler(async (req, res) => {
         localField: "_id",
         foreignField: "video",
         as: "likes",
+      },
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "channel",
+        as: "subscribers",
       },
     },
     {
@@ -121,6 +107,9 @@ exports.getVideoById = asyncHandler(async (req, res) => {
         likescount: {
           $size: "$likes",
         },
+        subscribersCount: {
+          $size: "$subscribers",
+        },
         commentscount: {
           $size: "$comments",
         },
@@ -134,9 +123,17 @@ exports.getVideoById = asyncHandler(async (req, res) => {
             else: false,
           },
         },
+        isSubscribed: {
+          $cond: {
+            if: {
+              $in: [req.user?._id, "$subscribers.subscriber"],
+            },
+            then: true,
+            else: false,
+          },
+        },
       },
     },
-
     {
       $project: {
         likescount: 1,
@@ -150,6 +147,8 @@ exports.getVideoById = asyncHandler(async (req, res) => {
         title: 1,
         description: 1,
         isLike: 1,
+        subscribersCount: 1,
+        isSubscribed: 1,
       },
     },
   ]);
@@ -165,6 +164,7 @@ exports.getVideoById = asyncHandler(async (req, res) => {
       new ApiResponse(200, getVideoByID[0], "Successfully fetched One Video")
     );
 });
+
 
 exports.userVideos = asyncHandler(async (req, res) => {
   const getUserVideos = await Video.find({
