@@ -3,32 +3,32 @@ const Subscription = require("../models/subscriptionsModal");
 const ApiError = require("../utils/apiError");
 const ApiResponse = require("../utils/apiResonse");
 
-exports.subscriptionsControler = asyncHandler(async (req, res) => {
+exports.subscriptionsController = asyncHandler(async (req, res) => {
   const { channel } = req.body;
   const { _id } = req.user;
 
   if (!channel) {
-    throw new ApiError(400, "SomeThing Went Wrong");
+    throw new ApiError(400, "Something went wrong. Channel is required.");
   }
 
   const alreadySubscribed = await Subscription.findOne({
-    subscriber: {
-      $in: _id,
-    },
+    subscriber: _id,
+    channel: channel,
   });
 
-  if (alreadySubscribed || alreadySubscribed == null) {
+  if (alreadySubscribed) {
     throw new ApiError(400, "You are already subscribed to this channel");
   }
+
+  
   const subscribed = await Subscription.create({
     subscriber: _id,
     channel,
   });
+
   if (!subscribed) {
-    throw new ApiError("Error In Subscriptions");
+    throw new ApiError(500, "Error in subscription creation");
   }
 
-  res
-    .status(200)
-    .json(new ApiResponse(200, subscribed, "Subscribed Successfully"));
+  res.status(200).json(new ApiResponse(200, subscribed, "Subscribed successfully"));
 });

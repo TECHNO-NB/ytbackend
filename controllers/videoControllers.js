@@ -66,6 +66,8 @@ exports.getAllVideos = asyncHandler(async (req, res) => {
 exports.getVideoById = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
 
+
+
   const getVideoByID = await Video.aggregate([
     {
       $match: { _id: new mongoose.Types.ObjectId(videoId) },
@@ -100,6 +102,33 @@ exports.getVideoById = asyncHandler(async (req, res) => {
         localField: "owner",
         foreignField: "_id",
         as: "owners",
+        pipeline: [
+          {
+            $lookup: {
+              from: "subscriptions",
+              localField: "_id",
+              foreignField: "channel",
+              as: "subscribers",
+            },
+          },
+          {
+            $addFields: {
+              subscriberCount: {
+                $size: "$subscribers",
+              },
+            },
+          },
+          {
+            $project: {
+              subscriberCount: 1,
+              fullName: 1,
+              _id: 1,
+              username: 1,
+              avatar: 1,
+              coverImage: 1,
+            },
+          },
+        ],
       },
     },
     {
@@ -107,26 +136,16 @@ exports.getVideoById = asyncHandler(async (req, res) => {
         likescount: {
           $size: "$likes",
         },
-        subscribersCount: {
-          $size: "$subscribers",
-        },
+
         commentscount: {
           $size: "$comments",
         },
+
         comments: "$comments",
         isLike: {
           $cond: {
             if: {
-              $in: [req.user?._id, "$likes.user"],
-            },
-            then: true,
-            else: false,
-          },
-        },
-        isSubscribed: {
-          $cond: {
-            if: {
-              $in: [req.user?._id, "$subscribers.subscriber"],
+              $in: [req.user?._id, "$likes.likedBy"],
             },
             then: true,
             else: false,
@@ -147,13 +166,12 @@ exports.getVideoById = asyncHandler(async (req, res) => {
         title: 1,
         description: 1,
         isLike: 1,
-        subscribersCount: 1,
-        isSubscribed: 1,
       },
     },
   ]);
 
-  console.log(getVideoByID[0]);
+  console.log(getVideoByID[0])
+
   if (!getVideoByID || getVideoByID.length === 0) {
     throw new ApiError(400, "Something Went Wrong");
   }
@@ -164,7 +182,6 @@ exports.getVideoById = asyncHandler(async (req, res) => {
       new ApiResponse(200, getVideoByID[0], "Successfully fetched One Video")
     );
 });
-
 
 exports.userVideos = asyncHandler(async (req, res) => {
   const getUserVideos = await Video.find({
