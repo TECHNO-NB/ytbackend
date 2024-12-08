@@ -65,9 +65,9 @@ exports.getAllVideos = asyncHandler(async (req, res) => {
 
 exports.getVideoById = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
-
-
-
+  if(!videoId){
+    throw new ApiError(400, "Video Id Not Found");
+  }
   const getVideoByID = await Video.aggregate([
     {
       $match: { _id: new mongoose.Types.ObjectId(videoId) },
@@ -170,7 +170,7 @@ exports.getVideoById = asyncHandler(async (req, res) => {
     },
   ]);
 
-  console.log(getVideoByID[0])
+  console.log(getVideoByID[0]);
 
   if (!getVideoByID || getVideoByID.length === 0) {
     throw new ApiError(400, "Something Went Wrong");
