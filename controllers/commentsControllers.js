@@ -33,14 +33,7 @@ exports.getAllComments = asyncHandler(async (req, res) => {
               as: "users",
             },
           },
-          {
-            $project: {
-              _id: 1,
-              "users._id": 1,
-              "users.username": 1,
-              "users.avatar": 1,
-            },
-          },
+       
         ],
       },
     },
@@ -54,6 +47,7 @@ exports.getAllComments = asyncHandler(async (req, res) => {
         _id: 1,
         commentsCount: 1,
         comments: 1,
+        username:1,
       },
     },
   ]);
