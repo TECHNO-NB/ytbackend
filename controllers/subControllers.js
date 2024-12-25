@@ -104,4 +104,4 @@ exports.allSubscriberController = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(200, allSubscriber, "all subscriber get successfully")
     );
-});
+}); 

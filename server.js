@@ -7,7 +7,8 @@ const cookieParser = require("cookie-parser");
 const subscriptionsRoute = require("./routes/subscriptionsRoute");
 const videoUploadRoute = require("./routes/videoUploadRoute.js");
 const likeRoute = require("./routes/likesRoute.js");
-const commentRoute = require("./routes/CommentsRoutes.js");
+const commentRoute = require("./routes/comentsRoutes.js");
+const playlistRoute = require("./routes/playlistRoute.js");
 
 const os = require("os");
 const cluster = require("cluster");
@@ -61,6 +62,7 @@ if (cluster.isPrimary) {
   app.use("/api/v1", videoUploadRoute);
   app.use("/api/v1", likeRoute);
   app.use("/api/v1", commentRoute);
+  app.use("/api/v1", playlistRoute);
 
   // Start server
   const PORT = process.env.PORT || 8000;
