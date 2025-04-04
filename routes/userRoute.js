@@ -39,6 +39,9 @@ router
 router
   .route("/userchannel/:username")
   .post(jwtVerify, controllers.getUserChannelProfile);
+  router
+  .route("/userprofile")
+  .post(jwtVerify,controllers.getOwnUserProfile);
 
 router.route("/forgetpassword").post(controllers.forgetPassword);
 

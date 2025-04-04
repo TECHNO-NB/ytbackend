@@ -6,6 +6,7 @@ const ApiResponse = require("../utils/apiResonse");
 const jwtVerify = require("../middlewares/authMiddleware");
 const jwt = require("jsonwebtoken");
 const cookie = require("cookie");
+const { default: mongoose } = require("mongoose");
 
 const createAccessAndRefreshToken = async (userId) => {
   try {
@@ -345,7 +346,64 @@ exports.getUserChannelProfile = asyncHandler(async (req, res) => {
     );
 });
 
-// forget password
+exports.getOwnUserProfile = asyncHandler(async (req, res) => {
+  const { _id } = req.user;
+  if (!_id) {
+    throw new ApiError(401, "User not login");
+  }
+  const user = await User.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(_id),
+      },
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "channel",
+        as: "totalSubscribers",
+      },
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "channel",
+        as: "totalSubscribers",
+      },
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "subscriber",
+        as: "totalSubscribersTo",
+      },
+    },
+    {
+      $addFields: {
+        subscribersCount: { $size: "$totalSubscribers" },
+        subscribedToCount: { $size: "$totalSubscribersTo" },
+      },
+    },
+    {
+      $project: {
+        subscribersCount: 1,
+        _id: 1,
+        subscribedToCount: 1,
+      },
+    },
+  ]);
+
+  if (user.length < 0 || !user[0]) {
+    throw new ApiError(500, "Error on fetch user data");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user[0], "User profile getting successfully"));
+});
 
 exports.forgetPassword = asyncHandler(async (req, res) => {
   const { email, newPassword } = req.body;

@@ -33,7 +33,6 @@ exports.getAllComments = asyncHandler(async (req, res) => {
               as: "users",
             },
           },
-       
         ],
       },
     },
@@ -47,7 +46,7 @@ exports.getAllComments = asyncHandler(async (req, res) => {
         _id: 1,
         commentsCount: 1,
         comments: 1,
-        username:1,
+        username: 1,
       },
     },
   ]);
@@ -69,10 +68,9 @@ exports.getAllComments = asyncHandler(async (req, res) => {
 
 exports.commentsControllers = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
-  const { _id } = req.user; // Assuming `req.user` is populated via middleware
+  const { _id } = req.user;
   const { content } = req.body;
 
-  // Input validation
   if (!content || content.trim().length === 0) {
     throw new ApiError(400, "Please enter a valid comment");
   }
@@ -82,7 +80,6 @@ exports.commentsControllers = asyncHandler(async (req, res) => {
   }
 
   try {
-    // Create the comment
     const savedComment = await Comment.create({
       owner: _id,
       content: content.trim(),
@@ -93,7 +90,6 @@ exports.commentsControllers = asyncHandler(async (req, res) => {
       throw new ApiError(500, "Failed to save comment");
     }
 
-    // Return success response
     return res
       .status(201)
       .json(new ApiResponse(201, savedComment, "Comment added successfully"));

@@ -21,7 +21,7 @@ router.route("/videoupload").post(
 );
 
 router.route("/getallvideos").get(getAllVideos);
-router.route("/getvideobyid/:videoId").post( jwtVerify,getVideoById);
+router.route("/getvideobyid/:videoId").post(getVideoById);
 router.route("/getuservideos").get(jwtVerify,userVideos);
 router.route("/videoviews/:videoId").post(jwtVerify,videoViews)
 

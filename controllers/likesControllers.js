@@ -14,7 +14,13 @@ exports.likesControllers = asyncHandler(async (req, res) => {
 
   const alreadyLiked = await Like.findOne({ video, likedBy: _id });
   if (alreadyLiked) {
-    throw new ApiError(400, "Already Liked");
+    const deletedLike = await Like.deleteOne({ video, likedBy: _id });
+    if (!deletedLike) {
+      throw new ApiError(500, "Error on unlike");
+    }
+    return res
+      .status(200)
+      .json(new ApiResponse(200, deletedLike, "Unlike successfully"));
   }
 
   const newLike = await Like.create({
@@ -94,7 +100,5 @@ exports.getAllLikesVideos = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(
-      new ApiResponse(200, likedVideos, "Liked videos get successfully")
-    );
+    .json(new ApiResponse(200, likedVideos, "Liked videos get successfully"));
 });
